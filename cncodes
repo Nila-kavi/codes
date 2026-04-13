@@ -5,6 +5,8 @@ arp -a
 arp -a -N 192.168.42.171
 netstat
 nslookup microsoft.com
+
+
 1)TCP (dictionary)
 Server:
 import socket
@@ -116,6 +118,7 @@ for i in range(10):
  if reply.decode() == "Great":
  break
 sock.close()
+
 
 3)UDP (DOB)
 SERVER:
