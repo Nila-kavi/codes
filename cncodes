@@ -1,0 +1,207 @@
+tracert www.google.in
+ping google.com
+ipconfig
+arp -a
+arp -a -N 192.168.42.171
+netstat
+nslookup microsoft.com
+1)TCP (dictionary)
+Server:
+import socket
+HOST = '0.0.0.0'
+PORT = 5000
+def run_server():
+ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ server.bind((HOST, PORT))
+ server.listen(1)
+ print(f"TCP chat server running on port {PORT}...")
+ dictionary = {
+ "lab": "A place for practical experiments",
+ "cloud": "Internet-based computing resources",
+ "network": "Interconnection of computers"
+ }
+ conn, addr = server.accept()
+ print("Client connected:", addr)
+ while True:
+ word = conn.recv(1024).decode()
+ if not word or word.lower() == "exit":
+ print("Client disconnected.")
+ break
+ print("Client:", word)
+ if word in dictionary:
+ reply = dictionary[word]
+ else:
+ reply = "Word not found"
+ conn.send(reply.encode())
+ if reply.lower() == "exit":
+ break
+ conn.close()
+ server.close()
+if __name__ == "__main__":
+ run_server()
+
+client:
+import socket
+SERVER = 'localhost'
+PORT = 5000
+def run_client():
+ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ client.connect((SERVER, PORT))
+ print("Connected to TCP chat server.")
+ while True:
+ word = input("Client: ")
+ client.send(word.encode())
+ if word.lower() == "exit":
+ break
+ reply = client.recv(1024).decode()
+ print("Server:", reply)
+ client.close()
+if __name__ == "__main__":
+ run_client()
+
+
+2)UDP magic game
+Server:
+import socket
+import random
+import sys
+HOST = "127.0.0.1"
+PORT = 30000
+try:
+ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+ sock.bind((HOST, PORT))
+except OSError as e:
+ print("Socket bind failed:", e)
+ print("Close IDLE completely and run again.")
+ sys.exit(1)
+print("UDP Guess-It Server Started on port", PORT)
+magic = random.randint(1, 100)
+attempts = 0
+try:
+ while attempts < 10:
+ data, addr = sock.recvfrom(1024)
+ guess = int(data.decode())
+ if guess < 1 or guess > 100:
+ sock.sendto(
+ b"Invalid guess! Enter a number between 1 and 100",
+ addr
+ )
+ continue
+ attempts += 1
+ if guess < magic:
+ sock.sendto(b"Higher", addr)
+ elif guess > magic:
+ sock.sendto(b"Lower", addr)
+else:
+ sock.sendto(b"Great", addr)
+ break
+ if attempts == 10:
+ sock.sendto(b"Better luck next time :)", addr)
+except KeyboardInterrupt:
+ print("\nServer stopped by user")
+finally:
+ sock.close()
+ print("Socket closed cleanly")
+
+client:
+import socket
+SERVER = "127.0.0.1"
+PORT = 30000
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+for i in range(10):
+ guess = input("Enter your guess: ")
+ sock.sendto(guess.encode(), (SERVER, PORT))
+ reply, _ = sock.recvfrom(1024)
+ print("Server:", reply.decode())
+ if reply.decode() == "Great":
+ break
+sock.close()
+
+3)UDP (DOB)
+SERVER:
+import socket
+from datetime import date
+from calendar import monthrange
+HOST = "127.0.0.1"
+PORT = 9999
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server.bind((HOST, PORT))
+print("UDP Server is running...")
+while True:
+ data, addr = server.recvfrom(1024)
+ try:
+ dob_str = data.decode().strip()
+ year, month, day = map(int, dob_str.split("-"))
+ birth_date = date(year, month, day)
+ today = date.today()
+ years = today.year - birth_date.year
+ months = today.month - birth_date.month
+ days = today.day - birth_date.day
+ if days < 0:
+ months -= 1
+ prev_month = today.month - 1 or 12
+ prev_year = today.year if today.month != 1 else today.year - 1
+ days += monthrange(prev_year, prev_month)[1]
+ if months < 0:
+ years -= 1
+ months += 12
+ result = f"Today's date: {today.strftime('%d/%m/%Y')}\n"
+ result += f"Age: {years} years {months} months {days} days"
+ except Exception:
+ result = "Invalid date format! Please send date as YYYY-MM-DD"
+ server.sendto(result.encode(), addr)
+CLIENT:
+import socket
+HOST = "127.0.0.1"
+PORT = 9999
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+year = input("Enter birth year (YYYY): ")
+month = input("Enter birth month (MM): ")
+day = input("Enter birth day (DD): ")
+dob = f"{year}-{month}-{day}"
+client.sendto(dob.encode(), (HOST, PORT))
+data, _ = client.recvfrom(1024)
+print("\nServer Response:")
+print(data.decode())
+client.close()
+
+
+4)UDP(image transfer)
+SERVER:
+import socket
+HOST = "0.0.0.0"
+PORT = 5005
+BUFFER_SIZE = 4096
+END_MARKER = b"__END__"
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind((HOST, PORT))
+print("UDP Image Server started... Waiting for image...")
+image_data = b""
+while True:
+ data, addr = sock.recvfrom(BUFFER_SIZE)
+ if data == END_MARKER:
+ break
+ image_data += data
+with open("received_image.jpg", "wb") as f:
+ f.write(image_data)
+print("Image received and saved successfully.")
+sock.close()
+
+
+CLIENT:
+import socket
+SERVER_IP = "127.0.0.1"
+PORT = 5005
+BUFFER_SIZE = 4096
+END_MARKER = b"__END__"
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+image_path = r"C:\Users\Kavinila\Downloads\VIT Downloads\image.jpg"
+with open(image_path, "rb") as f:
+ while True:
+ chunk = f.read(BUFFER_SIZE)
+ if not chunk:
+ break
+ sock.sendto(chunk, (SERVER_IP, PORT))
+sock.sendto(END_MARKER, (SERVER_IP, PORT))
+print("Image sent successfully.")
+sock.close()
