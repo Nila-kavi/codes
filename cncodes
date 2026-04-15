@@ -1,210 +1,1005 @@
-tracert www.google.in
-ping google.com
-ipconfig
-arp -a
-arp -a -N 192.168.42.171
-netstat
-nslookup microsoft.com
+BFS
+from collections import deque
+def bfs(graph, start):
+    visited = set()
+    queue = deque([start])
+    traversal = []
+    visited.add(start)
+    while queue:
+        node = queue.popleft()
+        traversal.append(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return traversal
+graph = {}
+edges = int(input("Enter number of edges: "))
+for _ in range(edges):
+    u, v = input().split()
+    graph.setdefault(u, []).append(v)
+    graph.setdefault(v, []).append(u)
+start = input("Enter start node: ")
+print("BFS Traversal:", bfs(graph, start))
 
+// Enter number of edges: 4
+a b
+a c
+b d
+c e
+Enter start node: a
+BFS Traversal: ['a', 'b', 'c', 'd', 'e']
 
-1)TCP (dictionary)
-Server:
-import socket
-HOST = '0.0.0.0'
-PORT = 5000
-def run_server():
- server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
- server.bind((HOST, PORT))
- server.listen(1)
- print(f"TCP chat server running on port {PORT}...")
- dictionary = {
- "lab": "A place for practical experiments",
- "cloud": "Internet-based computing resources",
- "network": "Interconnection of computers"
- }
- conn, addr = server.accept()
- print("Client connected:", addr)
- while True:
- word = conn.recv(1024).decode()
- if not word or word.lower() == "exit":
- print("Client disconnected.")
- break
- print("Client:", word)
- if word in dictionary:
- reply = dictionary[word]
- else:
- reply = "Word not found"
- conn.send(reply.encode())
- if reply.lower() == "exit":
- break
- conn.close()
- server.close()
-if __name__ == "__main__":
- run_server()
+2)dfs
+def dfs(graph, start, visited=None, traversal=None):
+    if visited is None:
+        visited = set()
+    if traversal is None:
+        traversal = []
+    visited.add(start)
+    traversal.append(start)
+    for neighbor in graph[start]:
+        if neighbor not in visited:
+            dfs(graph, neighbor, visited, traversal)
+    return traversal
+graph = {}
+edges = int(input("Enter number of edges: "))
+for _ in range(edges):
+    u, v = input().split()
+    graph.setdefault(u, []).append(v)
+    graph.setdefault(v, []).append(u)
+start = input("Enter start node: ")
+print("DFS Traversal:", dfs(graph, start))
+// Enter number of edges: 4
+a b
+a c
+b d 
+c e
+Enter start node: a
+DFS Traversal: ['a', 'b', 'd', 'c', 'e']
 
-client:
-import socket
-SERVER = 'localhost'
-PORT = 5000
-def run_client():
- client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
- client.connect((SERVER, PORT))
- print("Connected to TCP chat server.")
- while True:
- word = input("Client: ")
- client.send(word.encode())
- if word.lower() == "exit":
- break
- reply = client.recv(1024).decode()
- print("Server:", reply)
- client.close()
-if __name__ == "__main__":
- run_client()
+3)ucs
+import ast 
+import heapq 
+def ucs(graph, start, goal): 
+    queue = [(0, [start])] 
+    visited = set() 
+    while queue: 
+        cost, path = heapq.heappop(queue) 
+        node = path[-1] 
+        if node == goal: 
+            return path, cost 
+        if node not in visited: 
+            visited.add(node) 
+            print(f"Expanding node {node} with path cost {cost}") 
+            if node in graph: 
+                for neighbor, edge_cost in graph[node].items(): 
+                    if neighbor not in visited: 
+                        heapq.heappush(queue, (cost + edge_cost, path + [neighbor])) 
+    return None, None 
+graph_input = input("Enter the graph as a dictionary (format: {'A':{'B':1,'C':2},...}): ") 
+graph = ast.literal_eval(graph_input) 
+start = input("Enter start node: ") 
+goal = input("Enter goal node: ") 
+path, cost = ucs(graph, start, goal) 
+if path: 
+    print(f"Least cost path from {start} to {goal}: {' -> '.join(path)}") 
+    print(f"Total cost: {cost}") 
+else: 
+    print("No path found") 
+// 
+Enter the graph as a dictionary (format: {'A':{'B':1,'C':2},...}): {'A': {'B': 1, 'C': 4}, 'B': {'D': 2}, 'C': {'D': 1}, 'D': {}}
+Enter start node: A
+Enter goal node: D
+Expanding node A with path cost 0
+Expanding node B with path cost 1
+Least cost path from A to D: A -> B -> D
+Total cost: 3
 
+4)Greedy
+import ast 
+import heapq 
+def greedy_bfs(graph, start, goal, heuristic): 
+    queue = [(heuristic[start], [start])] 
+    visited = set() 
+    while queue: 
+        h_val, path = heapq.heappop(queue) 
+        node = path[-1] 
+        if node == goal: 
+            return path 
+        if node not in visited: 
+            visited.add(node) 
+            print(f"Expanding node {node} with heuristic {h_val}") 
+            if node in graph: 
+                for neighbor in graph[node]: 
+                    if neighbor not in visited: 
+                        heapq.heappush(queue, (heuristic[neighbor], path + [neighbor])) 
+    return None 
+graph_input = input("Enter the graph as a dictionary (format:{'A':['B','C'],....}): ") 
+graph = ast.literal_eval(graph_input) 
+heuristic_input = input("Enter the heuristic as a dictionary (format:{'A':3,'B':1,....}): ") 
+heuristic = ast.literal_eval(heuristic_input) 
+start = input("Enter start node: ") 
+goal = input("Enter goal node: ") 
+path = greedy_bfs(graph, start, goal, heuristic) 
+if path: 
+    print(f"Path from {start} to {goal} found by Greedy BFS: {'->'.join(path)}") 
+else: 
+    print("No path found") 
+#  {'A': {'B': 1, 'C': 4}, 'B': {'D': 2, 'E': 5}, 'C': {'F': 3}, 'D': {}, 'E': {'G': 1}, 'F': {}, 'G': {}} 
+//
+Enter the graph as a dictionary (format:{'A':['B','C'],....}): {'A': {'B': 1, 'C': 4}, 'B': {'D': 2, 'E': 5}, 'C': {'F': 3}, 'D': {}, 'E': {'G': 1}, 'F': {}, 'G': {}} 
+Enter the heuristic as a dictionary (format:{'A':3,'B':1,....}): {'A':3,'B':4,'C':2,'D':5,'E':4,'F':1,'G':6}
+Enter start node: A
+Enter goal node: G
+Expanding node A with heuristic 3
+Expanding node C with heuristic 2
+Expanding node F with heuristic 1
+Expanding node B with heuristic 4
+Expanding node E with heuristic 4
+Expanding node D with heuristic 5
+Path from A to G found by Greedy BFS: A->B->E->G
 
-2)UDP magic game
-Server:
-import socket
-import random
-import sys
-HOST = "127.0.0.1"
-PORT = 30000
-try:
- sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
- sock.bind((HOST, PORT))
-except OSError as e:
- print("Socket bind failed:", e)
- print("Close IDLE completely and run again.")
- sys.exit(1)
-print("UDP Guess-It Server Started on port", PORT)
-magic = random.randint(1, 100)
-attempts = 0
-try:
- while attempts < 10:
- data, addr = sock.recvfrom(1024)
- guess = int(data.decode())
- if guess < 1 or guess > 100:
- sock.sendto(
- b"Invalid guess! Enter a number between 1 and 100",
- addr
- )
- continue
- attempts += 1
- if guess < magic:
- sock.sendto(b"Higher", addr)
- elif guess > magic:
- sock.sendto(b"Lower", addr)
+5)A*
+import ast 
+import heapq 
+def a_star(graph, start, goal, heuristic, cost=None): 
+    queue = [(heuristic[start], 0, [start])] 
+    visited = set() 
+    while queue: 
+        f_val, g_val, path = heapq.heappop(queue) 
+        node = path[-1] 
+        if node == goal: 
+            return path, g_val 
+        if node not in visited: 
+            visited.add(node) 
+            print(f"Expanding node {node} with g={g_val}, h={heuristic[node]}, f={f_val}") 
+            if node in graph: 
+                for neighbor, edge_cost in graph[node].items(): 
+                    if neighbor not in visited: 
+                        g_new = g_val + edge_cost 
+                        f_new = g_new + heuristic[neighbor] 
+                        heapq.heappush(queue, (f_new, g_new, path + [neighbor])) 
+    return None, None 
+graph_input = input("Enter the graph as a dictionary (format: {'A':{'B':1,'C':2},...}): ") 
+graph = ast.literal_eval(graph_input) 
+heuristic_input = input("Enter the heuristic as a dictionary (format: {'A':3,'B':1,...}): ") 
+heuristic = ast.literal_eval(heuristic_input) 
+start = input("Enter start node: ") 
+goal = input("Enter goal node: ") 
+path, total_cost = a_star(graph, start, goal, heuristic, cost=None) 
+if path: 
+    print(f"Path from {start} to {goal} found by A*: {'->'.join(path)}") 
+    print(f"Total cost: {total_cost}") 
+else: 
+    print("No path found") 
+    # {'A':{'B':6,'C':3},'B':{'D':2,'E':4},'C':{'F':7},'D':{},'E':{'H':11},'F':{'H':6},'H':{}} 
+  #  {'A':15,'B':12,'C':10,'D':4,'E':8,'F':7,'H':0}
+//
+Enter the graph as a dictionary (format: {'A':{'B':1,'C':2},...}): {'A':{'B':6,'C':3},'B':{'D':2,'E':4},'C':{'F':7},'D':{},'E':{'H':11},'F':{'H':6},'H':{}} 
+Enter the heuristic as a dictionary (format: {'A':3,'B':1,...}):  {'A':15,'B':12,'C':10,'D':4,'E':8,'F':7,'H':0}
+Enter start node: A
+Enter goal node: H
+Expanding node A with g=0, h=15, f=15
+Expanding node C with g=3, h=10, f=13
+Expanding node F with g=10, h=7, f=17
+Path from A to H found by A*: A->C->F->H
+Total cost: 16
+
+6)Min max
+def minimax_collapsed(tree, maximizingPlayer, level=0): 
+    if not isinstance(tree, list): 
+        return tree 
+    child_values = [ 
+        minimax_collapsed(child, not maximizingPlayer, level + 1) 
+        for child in tree 
+    ] 
+    if maximizingPlayer: 
+        max_val = max(child_values) 
+        print(f"Level {level} Max node: {child_values} -> {max_val}") 
+        return max_val 
+    else: 
+        min_val = min(child_values) 
+        print(f"Level {level} Min node: {child_values} -> {min_val}") 
+        return min_val 
+import ast 
+tree_input = input("Enter the game tree as nested lists (leaf nodes are scores): ") 
+tree = ast.literal_eval(tree_input) 
+print("\nMinimax Evaluation (collapsed values at each level):\n") 
+optimal_value = minimax_collapsed(tree, True) 
+print("\nOptimal value at root:", optimal_value) 
+# [[[[3,5],[6,9]],[[1,2],[0,-1]]],[[[4,7],[8,10]],[[2,0],[1,3]]]] 
+//
+Enter the game tree as nested lists (leaf nodes are scores): [[[[3,5],[6,9]],[[1,2],[0,-1]]],[[[4,7],[8,10]],[[2,0],[1,3]]]]
+
+Minimax Evaluation (collapsed values at each level):
+
+Level 3 Min node: [3, 5] -> 3
+Level 3 Min node: [6, 9] -> 6
+Level 2 Max node: [3, 6] -> 6
+Level 3 Min node: [1, 2] -> 1
+Level 3 Min node: [0, -1] -> -1
+Level 2 Max node: [1, -1] -> 1
+Level 1 Min node: [6, 1] -> 1
+Level 3 Min node: [4, 7] -> 4
+Level 3 Min node: [8, 10] -> 8
+Level 2 Max node: [4, 8] -> 8
+Level 3 Min node: [2, 0] -> 0
+Level 3 Min node: [1, 3] -> 1
+Level 2 Max node: [0, 1] -> 1
+Level 1 Min node: [8, 1] -> 1
+Level 0 Max node: [1, 1] -> 1
+
+Optimal value at root: 1
+
+7)alpha beta
+import ast 
+def alphabeta(node, maximizingPlayer, alpha, beta, level=0): 
+    if isinstance(node, int): 
+        return node 
+    values = []          # Store child values 
+    pruned_flag = False  # Track pruning 
+    if maximizingPlayer: 
+        maxEval = float('-inf') 
+        for child in node: 
+            if pruned_flag: 
+                values.append("pruned") 
+                continue 
+            eval_child = alphabeta(child, False, alpha, beta, level + 1) 
+            values.append(eval_child) 
+            if eval_child > maxEval: 
+                maxEval = eval_child 
+            alpha = max(alpha, eval_child) 
+            if beta <= alpha: 
+                pruned_flag = True 
+        print(f"Max node at level {level}: {values} -> {maxEval}") 
+        return maxEval 
+    else: 
+        minEval = float('inf') 
+        for child in node: 
+            if pruned_flag: 
+                values.append("pruned") 
+                continue 
+            eval_child = alphabeta(child, True, alpha, beta, level + 1) 
+            values.append(eval_child) 
+            if eval_child < minEval: 
+                minEval = eval_child 
+            beta = min(beta, eval_child) 
+            if beta <= alpha: 
+                pruned_flag = True 
+        print(f"Min node at level {level}: {values} -> {minEval}") 
+        return minEval 
+tree_input = input("Enter the game tree as nested list: ") 
+tree = ast.literal_eval(tree_input) 
+print("\nAlpha-Beta Pruning Evaluation:\n") 
+optimal_value = alphabeta(tree, True, float('-inf'), float('inf')) 
+print("\nOptimal value at root:", optimal_value) 
+# [[[3,5],[6,9]],[[1,2],[0,-1]]] 
+//
+Enter the game tree as nested list: [[[3,5],[6,9]],[[1,2],[0,-1]]] 
+
+Alpha-Beta Pruning Evaluation:
+
+Max node at level 2: [3, 5] -> 5
+Max node at level 2: [6, 'pruned'] -> 6
+Min node at level 1: [5, 6] -> 5
+Max node at level 2: [1, 2] -> 2
+Min node at level 1: [2, 'pruned'] -> 2
+Max node at level 0: [5, 2] -> 5
+Optimal value at root: 5
+
+8)hill climbing
+def hill_climbing(graph, heights, start): 
+    current = start 
+    path = [current] 
+    while True: 
+        neighbors = graph[current] 
+        if not neighbors: 
+            break   
+        best_neighbor = neighbors[0] 
+        for n in neighbors: 
+            if heights[n] > heights[best_neighbor]: 
+                best_neighbor = n 
+        if heights[best_neighbor] > heights[current]: 
+            current = best_neighbor 
+            path.append(current) 
+        else: 
+            break  
+    return current, path 
+graph = { 
+    'A': ['B', 'C'], 
+    'B': ['D', 'E'], 
+    'C': ['F', 'G'], 
+    'D': [], 
+    'E': [], 
+    'F': [], 
+    'G': [] 
+} 
+heights = { 
+    'A': 10, 'B': 14, 'C': 12, 
+    'D': 13, 'E': 15, 'F': 11, 'G': 8 
+} 
+start_node = 'A' 
+peak, path = hill_climbing(graph, heights, start_node) 
+print(f"Hill climbing path: {path}") 
+print(f"Peak reached: {peak} with value {heights[peak]}")
+//
+Hill climbing path: ['A', 'B', 'E']
+Peak reached: E with value 15
+
+9)8 queens
+def is_safe(board, row, col):
+    for i in range(row):
+        if board[i] == col or abs(board[i] - col) == abs(i - row):
+            return False
+    return True
+def solve(board, row, n):
+    if row == n:
+        return True
+    for col in range(n):
+        if is_safe(board, row, col):
+            board[row] = col
+            if solve(board, row + 1, n):
+                return True
+            board[row] = -1
+    return False
+n = int(input("Enter number of queens: "))
+board = [-1] * n
+if solve(board, 0, n):
+    print("Solution:")
+    for i in range(n):
+        row = ["Q" if board[i] == j else "." for j in range(n)]
+        print(" ".join(row))
 else:
- sock.sendto(b"Great", addr)
- break
- if attempts == 10:
- sock.sendto(b"Better luck next time :)", addr)
-except KeyboardInterrupt:
- print("\nServer stopped by user")
-finally:
- sock.close()
- print("Socket closed cleanly")
+    print("No solution exists.")
+//
+Enter number of queens: 8
+Solution:
+Q . . . . . . .
+. . . . Q . . .
+. . . . . . . Q
+. . . . . Q . .
+. . Q . . . . .
+. . . . . . Q .
+. Q . . . . . .
+. . . Q . . . .
 
-client:
-import socket
-SERVER = "127.0.0.1"
-PORT = 30000
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-for i in range(10):
- guess = input("Enter your guess: ")
- sock.sendto(guess.encode(), (SERVER, PORT))
- reply, _ = sock.recvfrom(1024)
- print("Server:", reply.decode())
- if reply.decode() == "Great":
- break
-sock.close()
+10)waterjug
+import heapq 
+def water_jug_a_star(cap1, cap2, target_jug, target_amount): 
+    start = (0, 0) 
+    pq = [] 
+    heapq.heappush(pq, (0, 0, start, [])) 
+    visited = set() 
+    def heuristic(state): 
+        if target_jug == 1: 
+            return abs(state[0] - target_amount) 
+        else: 
+            return abs(state[1] - target_amount) 
+    while pq: 
+        f, g, (x, y), path = heapq.heappop(pq) 
+        if (x, y) in visited: 
+            continue 
+        visited.add((x, y)) 
+        path = path + [(x, y)] 
+        if (target_jug == 1 and x == target_amount) or\
+           (target_jug == 2 and y == target_amount): 
+            return path 
+        successors = [ 
+            (0, y),          # Empty jug1 
+            (x, 0),          # Empty jug2 
+            (cap1, y),       # Fill jug1 
+            (x, cap2)        # Fill jug2 
+        ] 
+        transfer = min(x, cap2 - y) 
+        successors.append((x - transfer, y + transfer)) 
+        transfer = min(y, cap1 - x) 
+        successors.append((x + transfer, y - transfer)) 
+        for state in successors: 
+            if state not in visited: 
+                new_g = g + 1 
+                new_f = new_g + heuristic(state) 
+                heapq.heappush(pq, (new_f, new_g, state, path)) 
+    return None 
+cap1 = int(input("Enter capacity of Jug 1: ")) 
+cap2 = int(input("Enter capacity of Jug 2: ")) 
+target_jug = int(input("Target jug (1 or 2): ")) 
+target_amount = int(input("Target water amount: ")) 
+solution = water_jug_a_star(cap1, cap2, target_jug, target_amount) 
+if solution: 
+    print("Solution Path (Jug1,Jug2):") 
+    for step in solution: 
+        print(step) 
+else: 
+    print("No solution found") 
+//
+Enter capacity of Jug 1: 4
+Enter capacity of Jug 2: 2
+Target jug (1 or 2): 2
+Target water amount: 2
+Solution Path (Jug1,Jug2):
+(0, 0)
+(0, 2)
+
+11)TSP
+import random 
+import math 
+def distance(a, b): 
+    return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2) 
+def total_distance(path, cities): 
+    d = 0 
+    for i in range(len(path)): 
+        d += distance(cities[path[i]], cities[path[(i + 1) % len(path)]]) 
+    return d 
+def get_neighbors(path): 
+    neighbors = [] 
+    for i in range(len(path)): 
+        for j in range(i + 1, len(path)): 
+            new_path = path[:] 
+            new_path[i], new_path[j] = new_path[j], new_path[i] 
+            neighbors.append(new_path) 
+    return neighbors 
+def hill_climbing(cities): 
+    path = list(range(len(cities))) 
+    random.shuffle(path) 
+    current_distance = total_distance(path, cities) 
+    while True: 
+        neighbors = get_neighbors(path) 
+        best_neighbor = path 
+        best_distance = current_distance 
+        for n in neighbors: 
+            d = total_distance(n, cities) 
+            if d < best_distance: 
+                best_distance = d 
+                best_neighbor = n 
+        if best_distance >= current_distance: 
+            break 
+        path = best_neighbor 
+        current_distance = best_distance 
+    return path, current_distance 
+n = int(input("Enter number of cities: ")) 
+cities = [] 
+for i in range(n): 
+    x = int(input("Enter x coordinate: ")) 
+    y = int(input("Enter y coordinate: ")) 
+    cities.append((x, y)) 
+path, dist = hill_climbing(cities) 
+print("Best path:", path) 
+print("Total distance:", dist)
+
+//
+Enter number of cities: 4
+Enter x coordinate: 0
+Enter y coordinate: 2
+Enter x coordinate: 1
+Enter y coordinate: 3
+Enter x coordinate: 3
+Enter y coordinate: 2
+Enter x coordinate: 1
+Enter y coordinate: 4
+Best path: [3, 2, 0, 1]
+Total distance: 8.242640687119284
+
+12)Wumpus
+size = int(input("Enter grid size: "))
+grid = []
+print("Enter grid values row by row (S-Start, P-Pit, W-Wumpus, G-Gold, .-Empty):")
+for i in range(size):
+    row = input(f"Enter row {i+1}: ").split()
+    while len(row) != size:
+        print(f"Please enter {size} values.")
+        row = input(f"Enter row {i+1}: ").split()
+    grid.append(row)
+print("\nWumpus World Grid:")
+for row in grid:
+    print(" ".join(row))
+for i in range(size):
+    for j in range(size):
+        if grid[i][j] == 'P':
+            print("Pit at position:", (i, j))
+        elif grid[i][j] == 'W':
+            print("Wumpus at position:", (i, j))
+        elif grid[i][j] == 'G':
+            print("Gold at position:", (i, j))
+        elif grid[i][j] == 'S':
+            print("Start position:", (i, j))
+
+//
+Enter grid size: 4
+Enter grid values row by row (S-Start, P-Pit, W-Wumpus, G-Gold, .-Empty):
+Enter row 1: S . . P
+Enter row 2: . W . .
+Enter row 3: . . P .
+Enter row 4: . . . G
+
+Wumpus World Grid:
+S . . P
+. W . .
+. . P .
+. . . G
+Start position: (0, 0)
+Pit at position: (0, 3)
+Wumpus at position: (1, 1)
+Pit at position: (2, 2)
+Gold at position: (3, 3)
+
+13)Bayesian network
+p_a = float(input("Enter P(A): "))
+p_b_given_a = float(input("Enter P(B|A): "))
+if not (0 <= p_a <= 1 and 0 <= p_b_given_a <= 1):
+ print("Probabilities must be between 0 and 1")
+else:
+ joint = p_a * p_b_given_a
+ print("Joint Probability P(A,B) =", joint)
+
+//
+Enter P(A): 0.6
+Enter P(B|A): 0.5
+Joint Probability P(A,B) = 0.3
 
 
-3)UDP (DOB)
-SERVER:
-import socket
-from datetime import date
-from calendar import monthrange
-HOST = "127.0.0.1"
-PORT = 9999
-server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server.bind((HOST, PORT))
-print("UDP Server is running...")
-while True:
- data, addr = server.recvfrom(1024)
- try:
- dob_str = data.decode().strip()
- year, month, day = map(int, dob_str.split("-"))
- birth_date = date(year, month, day)
- today = date.today()
- years = today.year - birth_date.year
- months = today.month - birth_date.month
- days = today.day - birth_date.day
- if days < 0:
- months -= 1
- prev_month = today.month - 1 or 12
- prev_year = today.year if today.month != 1 else today.year - 1
- days += monthrange(prev_year, prev_month)[1]
- if months < 0:
- years -= 1
- months += 12
- result = f"Today's date: {today.strftime('%d/%m/%Y')}\n"
- result += f"Age: {years} years {months} months {days} days"
- except Exception:
- result = "Invalid date format! Please send date as YYYY-MM-DD"
- server.sendto(result.encode(), addr)
-CLIENT:
-import socket
-HOST = "127.0.0.1"
-PORT = 9999
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-year = input("Enter birth year (YYYY): ")
-month = input("Enter birth month (MM): ")
-day = input("Enter birth day (DD): ")
-dob = f"{year}-{month}-{day}"
-client.sendto(dob.encode(), (HOST, PORT))
-data, _ = client.recvfrom(1024)
-print("\nServer Response:")
-print(data.decode())
-client.close()
+14)Block word puzzle
+initial = input("Enter initial state (space separated): ").split()
+goal = input("Enter goal state (space separated): ").split()
+current = initial.copy()
+print("Steps:")
+for i in range(len(goal)):
+    if current[i] != goal[i]:
+        block = goal[i]
+        j = current.index(block)
+        current[i], current[j] = current[j], current[i]
+        print(f"Move {block} to position {i+1}")
+print("Goal state reached:", current)
+//
+Enter initial state (space separated): A B C
+Enter goal state (space separated): C B A
+Steps:
+Move C to position 1
+Goal state reached: ['C', 'B', 'A']
 
+15)Banana
+monkey = input("Enter monkey position: ")
+box = input("Enter box position: ")
+banana = input("Enter banana position: ")
+if monkey != box:
+ print(f"Monkey moves from {monkey} to {box}")
+ monkey = box
+if box != banana:
+ print(f"Monkey pushes box from {box} to {banana}")
+ box = banana
+ monkey = banana
+print("Monkey climbs the box")
+print("Monkey grabs the banana")
+print("Goal achieved!")
+//
+Enter monkey position: A
+Enter box position: B
+Enter banana position: C
+Monkey moves from A to B
+Monkey pushes box from B to C
+Monkey climbs the box
+Monkey grabs the banana
+Goal achieved!
 
-4)UDP(image transfer)
-SERVER:
-import socket
-HOST = "0.0.0.0"
-PORT = 5005
-BUFFER_SIZE = 4096
-END_MARKER = b"__END__"
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((HOST, PORT))
-print("UDP Image Server started... Waiting for image...")
-image_data = b""
-while True:
- data, addr = sock.recvfrom(BUFFER_SIZE)
- if data == END_MARKER:
- break
- image_data += data
-with open("received_image.jpg", "wb") as f:
- f.write(image_data)
-print("Image received and saved successfully.")
-sock.close()
+16)FOL
+facts = set()
+n = int(input("Enter number of facts: "))
+for i in range(n):
+    fact = input("Enter fact: ")
+    facts.add(fact)
+query = input("Enter query: ")
+if query in facts:
+    print("TRUE - Fact exists in Knowledge Base")
+else:
+    print("FALSE - Fact not found")
+//
+Enter number of facts: 3 
+Enter fact: cat
+Enter fact: dog     
+Enter fact: tiger
+Enter query: dog
+TRUE - Fact exists in Knowledge Base
+ 17)IDS
+import ast 
+def dls(tree, node, goal, depth, path): 
+    path = path + [node] 
+    if node == goal: 
+        return path 
+    if depth == 0: 
+        return None 
+    for child in tree.get(node, []): 
+        if child not in path: 
+            result = dls(tree, child, goal, depth - 1, path) 
+            if result: 
+                return result 
+    return None 
+def ids(tree, start, goal, step=1, max_depth=50): 
+    depth = step 
+    while depth <= max_depth: 
+        path = dls(tree, start, goal, depth, []) 
+        print(f"Depth {depth}:", path) 
+        if path: 
+            return path 
+        depth += step 
+    return None 
+tree = ast.literal_eval(input("Enter tree (dict): ")) 
+start = input("Start node: ") 
+goal = input("Goal node: ") 
+step = int(input("Depth increment: ")) 
+result = ids(tree, start, goal, step) 
+print("Final Path:", " -> ".join(result) if result else "No path found") 
+# {'A': ['B', 'C'], 'B': ['D', 'E'], 'C': ['F'], 'D': [], 'E': ['G'], 'F': ['H'], 'G': [], 'H': []}
 
+//
+Enter tree (dict): {'A': ['B', 'C'], 'B': ['D', 'E'], 'C': ['F'], 'D': [], 'E': ['G'], 'F': ['H'], 'G': [], 'H': []}
+Start node: A
+Goal node: H
+Depth increment: 3
+Depth 3: ['A', 'C', 'F', 'H']
+Final Path: A -> C -> F -> H
+18)missionaries and cannibals
+from collections import deque 
+def is_valid(state): 
+    M, C, B = state 
+    if M < 0 or C < 0 or M > 3 or C > 3: 
+        return False 
+    if M > 0 and C > M: 
+        return False 
+    if (3 - M) > 0 and (3 - C) > (3 - M): 
+        return False 
+    return True 
+def get_successors(state): 
+    M, C, B = state 
+    successors = [] 
+    moves = [(0,2), (0,1), (1,1), (2,0), (1,0)] 
+    for m, c in moves: 
+        if B == 0: 
+            new_state = (M - m, C - c, 1) 
+        else: 
+            new_state = (M + m, C + c, 0) 
+        if is_valid(new_state): 
+            successors.append(new_state) 
+    return successors 
+def bfs(): 
+    start = (3, 3, 0) 
+    goal = (0, 0, 1) 
+    queue = deque([(start, [start])]) 
+    visited = set() 
+    while queue: 
+        state, path = queue.popleft() 
+        if state == goal: 
+            return path 
+        if state not in visited: 
+            visited.add(state) 
+            for successor in get_successors(state): 
+                queue.append((successor, path + [successor])) 
+ 
+    return None 
+solution = bfs() 
+if solution: 
+    print("Solution Found:") 
+    for step in solution: 
+        print(step) 
+else: 
+    print("No solution found.")
 
-CLIENT:
-import socket
-SERVER_IP = "127.0.0.1"
-PORT = 5005
-BUFFER_SIZE = 4096
-END_MARKER = b"__END__"
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-image_path = r"C:\Users\Kavinila\Downloads\VIT Downloads\image.jpg"
-with open(image_path, "rb") as f:
- while True:
- chunk = f.read(BUFFER_SIZE)
- if not chunk:
- break
- sock.sendto(chunk, (SERVER_IP, PORT))
-sock.sendto(END_MARKER, (SERVER_IP, PORT))
-print("Image sent successfully.")
-sock.close()
+//
+Solution Found:
+(3, 3, 0)
+(3, 1, 1)
+(3, 2, 0)
+(3, 0, 1)
+(3, 1, 0)
+(1, 1, 1)
+(2, 2, 0)
+(0, 2, 1)
+(0, 3, 0)
+(0, 1, 1)
+(0, 2, 0)
+(0, 0, 1)
+20)Tic tac toe
+def print_board(board): 
+    print() 
+    for i in range(len(board)): 
+        print("|".join(board[i])) 
+        if i != len(board) - 1: 
+            print("-" * (len(board[i]) * 4 - 3)) 
+    print() 
+def check_winner(board, player): 
+    rows = len(board) 
+    cols = len(board[0]) 
+    for r in range(rows): 
+        if all(board[r][c] == player for c in range(cols)): 
+            return True 
+    for c in range(cols): 
+        if all(board[r][c] == player for r in range(rows)): 
+            return True 
+    if rows == cols: 
+        if all(board[i][i] == player for i in range(rows)): 
+            return True 
+        if all(board[i][rows - i - 1] == player for i in range(rows)): 
+            return True 
+    return False 
+def is_draw(board): 
+    return all(cell != ' ' for row in board for cell in row) 
+print("TIC TAC TOE - INITIAL STATE") 
+rows = int(input("Enter number of rows: ")) 
+cols = int(input("Enter number of columns: ")) 
+board = [[' ' for _ in range(cols)] for _ in range(rows)] 
+print("Initial Board State:") 
+print_board(board) 
+player_symbols = {1: 'X', 2: 'O'} 
+current_player = 1 
+while True: 
+    print(f"Player {current_player}'s turn ({player_symbols[current_player]})") 
+    r = int(input(f"Enter row (1 to {rows}): ")) - 1 
+    c = int(input(f"Enter column (1 to {cols}): ")) - 1 
+    if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != ' ': 
+        print("Invalid move! Try again.") 
+        continue 
+    board[r][c] = player_symbols[current_player] 
+    print_board(board) 
+    if check_winner(board, player_symbols[current_player]): 
+        print(f"Player {current_player} wins!") 
+        break 
+    if is_draw(board): 
+        print("Game Draw!") 
+        break 
+    current_player = 2 if current_player == 1 else 1 
+//
+Enter number of rows: 3
+Enter number of columns: 3
+Initial Board State:
+
+ | | 
+---------
+ | | 
+---------
+ | | 
+
+Player 1's turn (X)
+Enter row (1 to 3): 2
+Enter column (1 to 3): 3
+
+ | | 
+---------
+ | |X
+---------
+ | | 
+
+Player 2's turn (O)
+Enter row (1 to 3): 1
+Enter column (1 to 3): 1
+
+O| | 
+---------
+ | |X
+---------
+ | | 
+
+Player 1's turn (X)
+Enter row (1 to 3): 1
+Enter column (1 to 3): 2
+
+O|X| 
+---------
+ | |X
+---------
+ | | 
+
+Player 2's turn (O)
+Enter row (1 to 3): 2
+Enter column (1 to 3): 2
+
+O|X| 
+---------
+ |O|X
+---------
+ | | 
+
+Player 1's turn (X)
+Enter row (1 to 3): 1
+Enter column (1 to 3): 3
+
+O|X|X
+---------
+ |O|X
+---------
+ | | 
+
+Player 2's turn (O)
+Enter row (1 to 3): 3
+Enter column (1 to 3): 3
+
+O|X|X
+---------
+ |O|X
+---------
+ | |O
+
+Player 2 wins!
+
+1) BFS (10 Mark Answer Style)
+Algorithm: Breadth First Search
+Step 1: Start from the given initial node.
+Step 2: Create a queue and insert the start node.
+Step 3: Mark the start node as visited.
+Step 4: Repeat until queue is empty:
+	Remove the front node from the queue 
+	Visit the node (print/store it) 
+	Add all unvisited adjacent nodes to the queue 
+	Mark them as visited 
+Step 5: Stop when all nodes are visited or goal is found.
+Explanation:
+BFS explores nodes level by level. It first visits all neighbors of the start node, then moves to the next level.
+Result:
+Gives shortest path in unweighted graphs.
+________________________________________
+ 2) DFS
+Algorithm: Depth First Search
+Step 1: Start from initial node
+Step 2: Mark it visited
+Step 3: Visit the node
+Step 4: Recursively visit an unvisited neighbor
+Step 5: If no neighbor → backtrack
+Step 6: Repeat until all nodes visited
+Explanation:
+DFS goes deep into the graph before exploring other branches.
+Result:
+Uses stack/recursion, not guaranteed shortest path.
+________________________________________
+ 3) UCS
+Algorithm: Uniform Cost Search
+Step 1: Initialize priority queue with start node (cost = 0)
+Step 2: Repeat:
+	Remove node with lowest cost 
+	If goal → return path 
+	Expand neighbors 
+	Add neighbors with updated cost 
+Step 3: Continue until goal reached
+Explanation:
+Always expands the least-cost path first.
+Result:
+Finds optimal path when costs are positive.
+________________________________________
+ 4) Greedy Best First Search
+Algorithm: Greedy Search
+Step 1: Start with initial node
+Step 2: Use priority queue based on heuristic h(n)
+Step 3: Select node with smallest heuristic
+Step 4: Expand neighbors
+Step 5: Repeat until goal reached
+Explanation:
+Uses only heuristic, ignores path cost.
+Result:
+Fast but not always optimal.
+________________________________________
+ 5) A* Algorithm
+Algorithm: A*
+Step 1: Initialize start node
+Step 2: Compute:
+f(n)=g(n)+h(n)
+
+Step 3: Add to priority queue
+Step 4: Repeat:
+	Select node with lowest f(n) 
+	Expand neighbors 
+	Update cost values 
+Step 5: Stop when goal reached
+Explanation:
+Combines actual cost and heuristic.
+Result:
+Optimal and complete (if heuristic is good).
+________________________________________
+ 6) Minimax
+Algorithm: Minimax
+Step 1: Generate full game tree
+Step 2: Assign values to leaf nodes
+Step 3: Apply:
+	Max player → choose maximum 
+	Min player → choose minimum 
+Step 4: Propagate values upward
+Step 5: Root gives optimal move
+Explanation:
+Used in adversarial games.
+________________________________________
+7) Alpha-Beta Pruning
+Algorithm: Alpha-Beta
+Step 1: Apply minimax
+Step 2: Maintain:
+	α = best value for max 
+	β = best value for min 
+Step 3: If β ≤ α → prune branch
+Explanation:
+Avoids unnecessary computation.
+Result:
+Same result as minimax but faster.
+________________________________________
+ 8) Hill Climbing
+Algorithm: Hill Climbing
+Step 1: Start from initial state
+Step 2: Evaluate neighbors
+Step 3: Move to best neighbor
+Step 4: Repeat until no improvement
+Explanation:
+Greedy local search.
+Result:
+May get stuck in local optimum.
+________________________________________
+ 9) N-Queens
+Algorithm: Backtracking
+Step 1: Place queen row by row
+Step 2: Check safety:
+	Column 
+	Diagonal 
+Step 3: If safe → place queen
+Step 4: Else → try next column
+Step 5: If no solution → backtrack
+________________________________________
+10) Water Jug (A*)
+Algorithm
+Step 1: Start with (0,0)
+Step 2: Generate states:
+	Fill 
+	Empty 
+	Transfer 
+Step 3: Apply A* search
+Step 4: Select best state
+Step 5: Repeat until goal reached
+________________________________________
+ 11) TSP (Hill Climbing)
+Step 1: Start with random path
+Step 2: Generate neighbors (swap cities)
+Step 3: Compute distance
+Step 4: Choose best path
+Step 5: Repeat until no improvement
+________________________________________
+ 12) Wumpus World
+Step 1: Input grid
+Step 2: Traverse each cell
+Step 3: Identify objects
+Step 4: Display positions
+________________________________________
+13) Bayesian
+Algorithm
+Step 1: Input probabilities
+Step 2: Compute:
+P(A,B)=P(A)×P(B∣A)
+
+________________________________________
+ 14) Block World
+Step 1: Compare initial and goal
+Step 2: Find misplaced block
+Step 3: Swap positions
+Step 4: Repeat until goal reached
+________________________________________
+ 15) Monkey Banana
+Step 1: Move monkey to box
+Step 2: Push box to banana
+Step 3: Climb box
+Step 4: Grab banana
+________________________________________
+ 16) FOL
+Step 1: Store facts
+Step 2: Take query
+Step 3: Check membership
+________________________________________
+ 17) IDS
+Step 1: Start with depth = 1
+Step 2: Perform DLS
+Step 3: Increase depth
+Step 4: Repeat until goal
+________________________________________
+ 18) Missionaries & Cannibals
+Step 1: Start from initial state
+Step 2: Generate valid moves
+Step 3: Avoid unsafe states
+Step 4: Use BFS
+Step 5: Stop at goal
+________________________________________
+ 19) Tic-Tac-Toe
+Step 1: Initialize board
+Step 2: Take turns
+Step 3: Check win/draw
+Step 4: Repeat
+v
